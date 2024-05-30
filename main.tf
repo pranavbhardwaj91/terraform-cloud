@@ -35,7 +35,7 @@ resource "azurerm_linux_virtual_machine" "example" {
   resource_group_name   = azurerm_resource_group.example.name
   network_interface_ids = [azurerm_network_interface.example.id]
   size                  = "Standard_DS1_v2"
-  admin_username        = "admin"
+  admin_username        = "pranavb"
   admin_password        = var.VM_PASS
 
   os_disk {
