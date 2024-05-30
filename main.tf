@@ -24,23 +24,6 @@ resource "azurerm_public_ip" "example" {
   allocation_method   = "Dynamic"
 }
 
-resource "azurerm_network_security_group" "example" {
-  name                = "example-nsg"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-}
-
-resource "azurerm_security_center_jit_policy" "example" {
-  resource_group_name = azurerm_resource_group.example.name
-  vm_name             = azurerm_linux_virtual_machine.example.name
-  location            = azurerm_resource_group.example.location
-
-  target_ports {
-    port     = "22"
-    protocol = "Tcp"
-  }
-}
-
 resource "azurerm_network_interface" "example" {
   name                = "example-nic"
   location            = azurerm_resource_group.example.location
@@ -51,6 +34,24 @@ resource "azurerm_network_interface" "example" {
     subnet_id                     = azurerm_subnet.example.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.example.id
+  }
+}
+
+resource "azurerm_network_security_group" "example" {
+  name                = "example-nsg"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  security_rule {
+    name                       = "allow-ssh"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
   }
 }
 
@@ -67,7 +68,8 @@ resource "azurerm_linux_virtual_machine" "example" {
   size                  = "Standard_DS1_v2"
   admin_username        = var.admin_username
   admin_password        = var.VM_PASS
-  disable_password_authentication = false # Set to true if you want to disable password authentication
+  disable_password_authentication = false # Set to true to require SSH key
+
   admin_ssh_key {
     username   = var.admin_username
     public_key = var.admin_ssh_key
