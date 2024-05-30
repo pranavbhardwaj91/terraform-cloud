@@ -17,6 +17,13 @@ resource "azurerm_subnet" "example" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
+resource "azurerm_public_ip" "example" {
+  name                = "example-pip"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  allocation_method   = "Dynamic"
+}
+
 resource "azurerm_network_interface" "example" {
   name                = "example-nic"
   location            = azurerm_resource_group.example.location
@@ -26,6 +33,7 @@ resource "azurerm_network_interface" "example" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.example.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.example.id
   }
 }
 
@@ -35,8 +43,9 @@ resource "azurerm_linux_virtual_machine" "example" {
   resource_group_name   = azurerm_resource_group.example.name
   network_interface_ids = [azurerm_network_interface.example.id]
   size                  = "Standard_DS1_v2"
-  admin_username        = "pranavb"
+  admin_username        = var.admin_username
   admin_password        = var.VM_PASS
+  disable_password_authentication = false # Set to true to require SSH key
 
   admin_ssh_key {
     username   = var.admin_username
